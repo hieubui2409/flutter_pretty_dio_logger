@@ -111,8 +111,8 @@ class PrettyDioLogger extends Interceptor {
         msg += '--- Request Headers ---\n$json\n';
       }
       if (queryParameters) {
-        String json = _encoder.convert(options.queryParameters);
-        if (!omitEmpty || json.isNotEmpty) {
+        if (!omitEmpty || options.queryParameters.isNotEmpty) {
+          String json = _encoder.convert(options.queryParameters);
           msg += '--- Query Parameters ---\n$json\n';
         }
       }
