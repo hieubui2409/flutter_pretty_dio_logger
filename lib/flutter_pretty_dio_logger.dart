@@ -118,11 +118,11 @@ class PrettyDioLogger extends Interceptor {
       }
       if (requestBody) {
         final dynamic data = options.data;
-        msg += '--- Request Body ---\n';
         if (!omitEmpty || data != null) {
           if (data is Map) {
-            String json = _encoder.convert(options.data);
-            if (!omitEmpty || json.isNotEmpty) {
+            if (!omitEmpty || data.isNotEmpty) {
+              String json = _encoder.convert(options.data);
+              msg += '--- Request Body ---\n';
               msg += '$json\n';
             }
           }
@@ -131,11 +131,13 @@ class PrettyDioLogger extends Interceptor {
               ..addEntries(data.fields)
               ..addEntries(data.files);
             if (!omitEmpty || formDataMap.isNotEmpty) {
+              msg += '--- Request Body ---\n';
               msg += '--- Form Data ---\n';
               formDataMap.forEach((key, value) => msg += '${key.toString()}: ${value.toString()}\n');
             }
           } else {
             if (!omitEmpty || data.toString().isNotEmpty) {
+              msg += '--- Request Body ---\n';
               msg += '${data.toString()}\n';
             }
           }
