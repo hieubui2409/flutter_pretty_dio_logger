@@ -108,38 +108,40 @@ class PrettyDioLogger extends Interceptor {
         requestHeaders['connectTimeout'] = options.connectTimeout;
         requestHeaders['receiveTimeout'] = options.receiveTimeout;
         String json = _encoder.convert(requestHeaders);
-        msg += '[--- Request Headers ---]\n$json\n';
+        msg += '--- Request Headers ---\n$json\n';
       }
       if (queryParameters) {
         String json = _encoder.convert(options.queryParameters);
         if (!omitEmpty || json.isNotEmpty) {
-          msg += '[--- Query Parameters ---]\n$json\n';
+          msg += '--- Query Parameters ---\n$json\n';
         }
       }
       if (requestBody) {
         final dynamic data = options.data;
-        msg += '[--- Request Body ---]\n';
-        if (data is Map) {
-          String json = _encoder.convert(options.data);
-          if (!omitEmpty || json.isNotEmpty) {
-            msg += '$json\n';
+        msg += '--- Request Body ---\n';
+        if (!omitEmpty || data != null) {
+          if (data is Map) {
+            String json = _encoder.convert(options.data);
+            if (!omitEmpty || json.isNotEmpty) {
+              msg += '$json\n';
+            }
           }
-        }
-        if (data is FormData) {
-          final formDataMap = <String, dynamic>{}
-            ..addEntries(data.fields)
-            ..addEntries(data.files);
-          if (!omitEmpty || formDataMap.isNotEmpty) {
-            msg += '[--- Form Data ---]\n';
-            formDataMap.forEach((key, value) => msg += '${key.toString()}: ${value.toString()}\n');
-          }
-        } else {
-          if (!omitEmpty || data.toString().isNotEmpty) {
-            msg += '${data.toString()}\n';
+          if (data is FormData) {
+            final formDataMap = <String, dynamic>{}
+              ..addEntries(data.fields)
+              ..addEntries(data.files);
+            if (!omitEmpty || formDataMap.isNotEmpty) {
+              msg += '--- Form Data ---\n';
+              formDataMap.forEach((key, value) => msg += '${key.toString()}: ${value.toString()}\n');
+            }
+          } else {
+            if (!omitEmpty || data.toString().isNotEmpty) {
+              msg += '${data.toString()}\n';
+            }
           }
         }
       }
-      msg += '===== REQUEST - END =====\n';
+      msg += '===== REQUEST - END =====';
       _defaultLog(msg);
       return;
     }
@@ -201,7 +203,7 @@ class PrettyDioLogger extends Interceptor {
         }
       }
       msg += 'Processing Time: ${DateTime.now().difference(_startTime).inMilliseconds.toString()} ms\n';
-      msg += '===== ERROR - END =====\n';
+      msg += '===== ERROR - END =====';
       _defaultLog(msg);
       return;
     }
@@ -228,14 +230,14 @@ class PrettyDioLogger extends Interceptor {
         final responseHeaders = <String, String>{};
         response.headers.forEach((k, list) => responseHeaders[k] = list.toString());
         String json = _encoder.convert(responseHeaders);
-        msg += '[--- Request Headers ---]\n$json\n';
+        msg += '--- Request Headers ---\n$json\n';
       }
       if (responseBody) {
         String json = _encoder.convert(response.data);
-        msg += '[--- Response Body ---]\n$json\n';
+        msg += '--- Response Body ---\n$json\n';
       }
       msg += 'Processing Time: ${DateTime.now().difference(_startTime).inMilliseconds.toString()} ms\n';
-      msg += '===== RESPONSE - END =====\n';
+      msg += '===== RESPONSE - END =====';
       _defaultLog(msg);
       return;
     }
