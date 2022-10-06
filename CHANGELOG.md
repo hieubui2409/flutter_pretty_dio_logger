@@ -1,3 +1,12 @@
+# 2.0.3
+* Fix show cUrl for FormData.
+
+# 2.0.2
+* Fix cUrl when "content-type" = "application/x-www-form-urlencoded".
+
+# 2.0.1
+* Add cUrl print.
+
 # 2.0.0
 * Remove flutter dependency.
 

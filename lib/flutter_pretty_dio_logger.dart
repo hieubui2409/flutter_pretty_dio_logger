@@ -28,6 +28,12 @@ class PrettyDioLogger extends Interceptor {
   /// Print log
   final bool canShowLog;
 
+  /// Print cURL
+  final bool showCUrl;
+
+  /// Print FormData
+  final bool convertFormData;
+
   /// Omit empty data
   final bool omitEmpty;
 
@@ -52,6 +58,8 @@ class PrettyDioLogger extends Interceptor {
     this.canShowLog = false,
     this.omitEmpty = false,
     this.compact = false,
+    this.showCUrl = false,
+    this.convertFormData = false,
   });
 
   late DateTime _startTime;
@@ -62,7 +70,7 @@ class PrettyDioLogger extends Interceptor {
       try {
         _logOnRequest(options);
       } catch (e) {
-        log('PrettyDioLogger: ' + e.toString());
+        _defaultLog('PrettyDioLogger: $e');
       }
     }
     super.onRequest(options, handler);
@@ -74,7 +82,7 @@ class PrettyDioLogger extends Interceptor {
       try {
         _logOnError(err);
       } catch (e) {
-        log('PrettyDioLogger: ' + e.toString());
+        _defaultLog('PrettyDioLogger: $e');
       }
     }
     super.onError(err, handler);
@@ -86,7 +94,7 @@ class PrettyDioLogger extends Interceptor {
       try {
         _logOnResponse(response);
       } catch (e) {
-        log('PrettyDioLogger: ' + e.toString());
+        _defaultLog('PrettyDioLogger: $e');
       }
     }
     super.onResponse(response, handler);
@@ -150,6 +158,9 @@ class PrettyDioLogger extends Interceptor {
     _logBlock(isBegin: true, type: 'REQUEST');
     _defaultLog('Request - Method: $method ');
     _defaultLog('URI - ${uri.toString()}');
+    if (showCUrl) {
+      _cURLRepresentation(options);
+    }
     if (requestHeader) {
       final requestHeaders = <String, dynamic>{};
       requestHeaders.addAll(options.headers);
@@ -182,7 +193,7 @@ class PrettyDioLogger extends Interceptor {
           ..addEntries(data.fields)
           ..addEntries(data.files);
         if (!omitEmpty || formDataMap.isNotEmpty) {
-          formDataMap.forEach((key, value) => _defaultLog(key.toString() + ': ' + value.toString()));
+          formDataMap.forEach((key, value) => _defaultLog('$key: $value'));
         }
       } else {
         if (!omitEmpty || data.toString().isNotEmpty) {
@@ -260,6 +271,46 @@ class PrettyDioLogger extends Interceptor {
     }
     _logProcessingTime();
     _logBlock(type: 'RESPONSE', isBegin: false);
+  }
+
+  void _cURLRepresentation(RequestOptions options) {
+    List<String> components = ['curl -i'];
+    components.add('-X ${options.method}');
+
+    options.headers.forEach((k, v) {
+      if (k != 'Cookie') {
+        components.add('-H "$k: $v"');
+      }
+    });
+
+    if (options.data != null) {
+      if (options.data is FormData) {
+        if (convertFormData) {
+          final fieldData = Map.fromEntries(options.data.fields);
+          fieldData.forEach((key, value) {
+            components.add('--form $key="$value"');
+          });
+          final fileData = Map.fromEntries(options.data.files);
+          fileData.forEach((key, value) {
+            // can show file name only
+            components.add('--form =@"${(value as MultipartFile).filename}"');
+          });
+        }
+      } else if (options.headers['content-type'] ==
+          'application/x-www-form-urlencoded') {
+        options.data.forEach((k, v) {
+          components.add('-d "$k=$v"');
+        });
+      } else {
+        final data = json.encode(options.data).replaceAll('"', '\\"');
+        components.add('-d "$data"');
+      }
+    }
+
+    components.add('"${options.uri.toString()}"');
+
+    String cURL = components.join(' \\\n\t');
+    _defaultLog('[---cURL---]\n$cURL');
   }
 
   void _defaultLog(String msg) {

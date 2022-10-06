@@ -15,9 +15,10 @@ void main() {
       responseBody: true,
       error: true,
       showProcessingTime: true,
+      showCUrl: true,
       // canShowLog: kDebugMode,
     ),
   );
-
+  // Note: logPrint default is "log", it is work only when Debugging - https://github.com/Dart-Code/Dart-Code/issues/3653
   dio.get('/world/total');
 }
