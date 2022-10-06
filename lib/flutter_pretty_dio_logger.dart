@@ -44,6 +44,10 @@ class PrettyDioLogger extends Interceptor {
   /// you can also write log in a file.
   final void Function(String msg) logPrint;
 
+  /// Log printer; defaults logPrint log to console.
+  /// you can also write log in a file.
+  final void Function(String msg) logPrintCurl;
+
   final JsonEncoder _encoder = const JsonEncoder.withIndent('\t');
 
   PrettyDioLogger({
@@ -60,6 +64,7 @@ class PrettyDioLogger extends Interceptor {
     this.compact = false,
     this.showCUrl = false,
     this.convertFormData = false,
+    this.logPrintCurl = log,
   });
 
   late DateTime _startTime;
@@ -153,10 +158,11 @@ class PrettyDioLogger extends Interceptor {
       }
       msg += '===== REQUEST - END =====';
       _defaultLog(msg);
+      _defaultLogCurl(_getStringCurl(options));
       return;
     }
     _logBlock(isBegin: true, type: 'REQUEST');
-    _defaultLog('Request - Method: $method ');
+    _defaultLog('Request Method: $method ');
     _defaultLog('URI - ${uri.toString()}');
     if (showCUrl) {
       _cURLRepresentation(options);
@@ -273,7 +279,7 @@ class PrettyDioLogger extends Interceptor {
     _logBlock(type: 'RESPONSE', isBegin: false);
   }
 
-  void _cURLRepresentation(RequestOptions options) {
+  String _getStringCurl(RequestOptions options) {
     List<String> components = ['curl -i'];
     components.add('-X ${options.method}');
 
@@ -296,8 +302,7 @@ class PrettyDioLogger extends Interceptor {
             components.add('--form =@"${(value as MultipartFile).filename}"');
           });
         }
-      } else if (options.headers['content-type'] ==
-          'application/x-www-form-urlencoded') {
+      } else if (options.headers['content-type'] == 'application/x-www-form-urlencoded') {
         options.data.forEach((k, v) {
           components.add('-d "$k=$v"');
         });
@@ -310,11 +315,19 @@ class PrettyDioLogger extends Interceptor {
     components.add('"${options.uri.toString()}"');
 
     String cURL = components.join(' \\\n\t');
-    _defaultLog('[---cURL---]\n$cURL');
+    return cURL;
+  }
+
+  void _cURLRepresentation(RequestOptions options) {
+    _defaultLog('[--- CURL ---]\n$_getStringCurl(options)');
   }
 
   void _defaultLog(String msg) {
     logPrint(msg);
+  }
+
+  void _defaultLogCurl(String msg) {
+    logPrintCurl(msg);
   }
 
   void _logBlock({
