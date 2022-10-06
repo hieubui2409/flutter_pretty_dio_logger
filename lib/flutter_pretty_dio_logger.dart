@@ -283,7 +283,9 @@ class PrettyDioLogger extends Interceptor {
 
   String _getStringCurl(RequestOptions options) {
     List<String> components = ['curl -i'];
-    components.add('-X ${options.method}');
+    if (options.method.toUpperCase() != 'GET') {
+      components.add('-X ${options.method}');
+    }
 
     options.headers.forEach((k, v) {
       if (k != 'Cookie') {
