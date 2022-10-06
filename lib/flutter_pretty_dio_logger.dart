@@ -158,7 +158,9 @@ class PrettyDioLogger extends Interceptor {
       }
       msg += '===== REQUEST - END =====';
       _defaultLog(msg);
-      _defaultLogCurl(_getStringCurl(options));
+      if (showCUrl) {
+        _defaultLogCurl(_getStringCurl(options));
+      }
       return;
     }
     _logBlock(isBegin: true, type: 'REQUEST');
@@ -249,7 +251,7 @@ class PrettyDioLogger extends Interceptor {
         final responseHeaders = <String, String>{};
         response.headers.forEach((k, list) => responseHeaders[k] = list.toString());
         String json = _encoder.convert(responseHeaders);
-        msg += '--- Request Headers ---\n$json\n';
+        msg += '--- Response Headers ---\n$json\n';
       }
       if (responseBody) {
         String json = _encoder.convert(response.data);
