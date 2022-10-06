@@ -138,8 +138,7 @@ class PrettyDioLogger extends Interceptor {
               msg += '--- Request Body ---\n';
               msg += '$json\n';
             }
-          }
-          if (data is FormData) {
+          } else if (data is FormData) {
             final formDataMap = <String, dynamic>{}
               ..addEntries(data.fields)
               ..addEntries(data.files);
@@ -194,8 +193,7 @@ class PrettyDioLogger extends Interceptor {
         if (!omitEmpty || json.isNotEmpty) {
           _defaultLog(json);
         }
-      }
-      if (data is FormData) {
+      } else if (data is FormData) {
         _defaultLog('[--- Form Data ---]');
         final formDataMap = <String, dynamic>{}
           ..addEntries(data.fields)
